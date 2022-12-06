@@ -24,7 +24,13 @@ struct cell {
 typedef struct cell cell_t;
 
 void draw_minefield(int height, int width, cell_t *cells) {
+    printf("  ");
+    for(int j = 0; j < width; j++) {
+        printf(" %d ", j);
+    }
+    printf("\n");
     for(int i = 0; i < height; i++) {
+        printf("%d ", i);
         for(int j = 0; j < width; j++) {
             if(cells[i * height + j].discovered) {
                 printf("[%c]", cells[i * height + j].character);
