@@ -115,8 +115,46 @@ void sample_cells(int height, int width, cell_t *cells) {
 }
 
 void uncover_cells(int x, int y, int height, int width, cell_t *cells) {
-    if(cells[y * height + x].value != mine) {
+    if(cells[y * height + x].value == mine) {
+        return;
+    }
+    int count_process = 0;
+    cell_t *to_process = NULL;
 
+    cells[y * HEIGHT + x].discovered = true;
+
+
+    // upper left
+    if(((i - 1) >= 0) && ((j - 1) >= 0) && (cells[(i - 1) * height + (j - 1)].value == field)) {
+        cells[i * height + j].character += 1;
+    }
+    // upper middle
+    if(((i - 1) >= 0) && (cells[(i - 1) * height + j].value == field)) {
+        cells[i * height + j].character += 1;
+    }
+    // upper right
+    if(((i - 1) >= 0) && ((j + 1) < width) && (cells[(i - 1) * height + (j + 1)].value == field)) {
+        cells[i * height + j].character += 1;
+    }
+    // left
+    if(((j - 1) >= 0) && (cells[i * height + (j - 1)].value == field)) {
+        cells[i * height + j].character += 1;
+    }
+    // right
+    if(((j + 1) < width) && (cells[i * height + (j + 1)].value == field)) {
+        cells[i * height + j].character += 1;
+    }
+    // lower left
+    if(((i + 1) < height) && ((j - 1) >= 0) && (cells[(i + 1) * height + (j - 1)].value == field)) {
+        cells[i * height + j].character += 1;
+    }
+    // lower middle
+    if(((i + 1) < height) && (cells[(i + 1) * height + j].value == field)) {
+        cells[i * height + j].character += 1;
+    }
+    // lower right
+    if(((i + 1) < height) && ((j + 1) < width) && (cells[(i + 1) * height + (j + 1)].value == field)) {
+        cells[i * height + j].character += 1;
     }
 }
 
@@ -140,7 +178,6 @@ bool update_minefield(int height, int width, cell_t *cells) {
             passed = true;
         }
     }
-    cells[y * HEIGHT + x].discovered = true;
     uncover_cells(x, y, height, width, cells);
 
     return cells[y * HEIGHT + x].value == mine;
