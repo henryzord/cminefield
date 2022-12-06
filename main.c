@@ -26,11 +26,11 @@ typedef struct cell cell_t;
 void draw_minefield(int height, int width, cell_t *cells) {
     for(int i = 0; i < height; i++) {
         for(int j = 0; j < width; j++) {
-//            if(cells[i * height + j].discovered) {
+            if(cells[i * height + j].discovered) {
                 printf("[%c]", cells[i * height + j].character);
-//            } else {
-//                printf("[^]");
-//            }
+            } else {
+                printf("[^]");
+            }
         }
         printf("\n");
     }
@@ -114,47 +114,44 @@ void sample_cells(int height, int width, cell_t *cells) {
     }
 }
 
+
 void uncover_cells(int x, int y, int height, int width, cell_t *cells) {
     if(cells[y * height + x].value == mine) {
         return;
     }
-    int count_process = 0;
-    cell_t *to_process = NULL;
-
-    cells[y * HEIGHT + x].discovered = true;
-
-
+    cells[y * height + x].discovered = true;
+    
     // upper left
-    if(((i - 1) >= 0) && ((j - 1) >= 0) && (cells[(i - 1) * height + (j - 1)].value == field)) {
-        cells[i * height + j].character += 1;
+    if(((y - 1) >= 0) && ((x - 1) >= 0) && !(cells[(y - 1) * height + (x - 1)].discovered) && (cells[(y - 1) * height + (x - 1)].character == ' ')) {
+        uncover_cells(x - 1, y - 1, height, width, cells);
     }
     // upper middle
-    if(((i - 1) >= 0) && (cells[(i - 1) * height + j].value == field)) {
-        cells[i * height + j].character += 1;
+    if(((y - 1) >= 0) && !(cells[(y - 1) * height + x].discovered) && (cells[(y - 1) * height + x].character == ' ')) {
+        uncover_cells(x, y - 1, height, width, cells);
     }
     // upper right
-    if(((i - 1) >= 0) && ((j + 1) < width) && (cells[(i - 1) * height + (j + 1)].value == field)) {
-        cells[i * height + j].character += 1;
+    if(((y - 1) >= 0) && ((x + 1) < width) && !(cells[(y - 1) * height + (x + 1)].discovered) && (cells[(y - 1) * height + (x + 1)].character == ' ')) {
+        uncover_cells(x + 1, y - 1, height, width, cells);
     }
     // left
-    if(((j - 1) >= 0) && (cells[i * height + (j - 1)].value == field)) {
-        cells[i * height + j].character += 1;
+    if(((x - 1) >= 0) && !(cells[y * height + (x - 1)].discovered) && (cells[y * height + (x - 1)].character) == ' ') {
+        uncover_cells(x - 1, y, height, width, cells);
     }
     // right
-    if(((j + 1) < width) && (cells[i * height + (j + 1)].value == field)) {
-        cells[i * height + j].character += 1;
+    if(((x + 1) < width) && !(cells[y * height + (x + 1)].discovered) && (cells[y * height + (x + 1)].character == ' ')) {
+        uncover_cells(x + 1, y, height, width, cells);
     }
     // lower left
-    if(((i + 1) < height) && ((j - 1) >= 0) && (cells[(i + 1) * height + (j - 1)].value == field)) {
-        cells[i * height + j].character += 1;
+    if(((y + 1) < height) && ((x - 1) >= 0) && !(cells[(y + 1) * height + (x - 1)].discovered) && (cells[(y + 1) * height + (x - 1)].character == ' ')) {
+        uncover_cells(x - 1, y + 1, height, width, cells);
     }
     // lower middle
-    if(((i + 1) < height) && (cells[(i + 1) * height + j].value == field)) {
-        cells[i * height + j].character += 1;
+    if(((y + 1) < height) && !(cells[(y + 1) * height + x].discovered) && (cells[(y + 1) * height + x].character == ' ')) {
+        uncover_cells(x, y + 1, height, width, cells);
     }
     // lower right
-    if(((i + 1) < height) && ((j + 1) < width) && (cells[(i + 1) * height + (j + 1)].value == field)) {
-        cells[i * height + j].character += 1;
+    if(((y + 1) < height) && ((x + 1) < width) && !(cells[(y + 1) * height + (x + 1)].discovered) && (cells[(y + 1) * height + (x + 1)].character == ' ')) {
+        uncover_cells(x + 1, y + 1, height, width, cells);
     }
 }
 
@@ -193,6 +190,6 @@ int main() {
         draw_minefield(HEIGHT, WIDTH, &cells[0][0]);
         lost = update_minefield(HEIGHT, WIDTH, &cells[0][0]);
     }
-    printf("Hello, World!\n");
+    printf("Você perdeu! (acertou uma mina)\n");
     return 0;
 }
