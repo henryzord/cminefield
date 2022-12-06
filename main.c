@@ -13,7 +13,7 @@ struct position {
 };
 typedef struct position position_t;
 
-enum celltype {field = 1, flag = 0, mine = -1};
+enum celltype {field = 1, mine = -1};
 
 struct cell {
     position_t pos;
@@ -73,19 +73,19 @@ void sample_cells(int height, int width, cell_t *cells) {
                 continue;
             }
             // upper left
-            if(((i - 1) > 0) && ((j - 1) > 0) && (cells[(i - 1) * height + (j - 1)].value == mine)) {
+            if(((i - 1) >= 0) && ((j - 1) >= 0) && (cells[(i - 1) * height + (j - 1)].value == mine)) {
                 cells[i * height + j].character += 1;
             }
             // upper middle
-            if(((i - 1) > 0) && (cells[(i - 1) * height + j].value == mine)) {
+            if(((i - 1) >= 0) && (cells[(i - 1) * height + j].value == mine)) {
                 cells[i * height + j].character += 1;
             }
             // upper right
-            if(((i - 1) > 0) && ((j + 1) < width) && (cells[(i - 1) * height + (j + 1)].value == mine)) {
+            if(((i - 1) >= 0) && ((j + 1) < width) && (cells[(i - 1) * height + (j + 1)].value == mine)) {
                 cells[i * height + j].character += 1;
             }
             // left
-            if(((j - 1) > 0) && (cells[i * height + (j - 1)].value == mine)) {
+            if(((j - 1) >= 0) && (cells[i * height + (j - 1)].value == mine)) {
                 cells[i * height + j].character += 1;
             }
             // right
@@ -93,7 +93,7 @@ void sample_cells(int height, int width, cell_t *cells) {
                 cells[i * height + j].character += 1;
             }
             // lower left
-            if(((i + 1) < height) && ((j - 1) > 0) && (cells[(i + 1) * height + (j - 1)].value == mine)) {
+            if(((i + 1) < height) && ((j - 1) >= 0) && (cells[(i + 1) * height + (j - 1)].value == mine)) {
                 cells[i * height + j].character += 1;
             }
             // lower middle
@@ -104,12 +104,19 @@ void sample_cells(int height, int width, cell_t *cells) {
             if(((i + 1) < height) && ((j + 1) < width) && (cells[(i + 1) * height + (j + 1)].value == mine)) {
                 cells[i * height + j].character += 1;
             }
+
             if(cells[i * height + j].character > 0) {
                 cells[i * height + j].character += '0';
             } else {
                 cells[i * height + j].character = ' ';
             }
         }
+    }
+}
+
+void uncover_cells(int x, int y, int height, int width, cell_t *cells) {
+    if(cells[y * height + x].value != mine) {
+
     }
 }
 
@@ -134,6 +141,7 @@ bool update_minefield(int height, int width, cell_t *cells) {
         }
     }
     cells[y * HEIGHT + x].discovered = true;
+    uncover_cells(x, y, height, width, cells);
 
     return cells[y * HEIGHT + x].value == mine;
 }
