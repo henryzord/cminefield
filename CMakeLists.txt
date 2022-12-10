@@ -3,4 +3,7 @@ project(cminefield C)
 
 set(CMAKE_C_STANDARD 23)
 
-add_executable(cminefield main.c)
+include_directories(include)
+
+add_executable(cminefield src/main.c include/ANSI-color-codes.h)
+

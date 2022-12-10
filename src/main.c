@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
+#include "ANSI-color-codes.h"
 
 #define WIDTH 10
 #define HEIGHT 10
@@ -35,7 +36,7 @@ void draw_minefield(int height, int width, cell_t *cells) {
             if(cells[i * height + j].discovered) {
                 printf("[%c]", cells[i * height + j].character);
             } else {
-                printf("[^]");
+                printf(GRN "[^]" reset);
             }
         }
         printf("\n");
