@@ -26,6 +26,7 @@ cada um dos itens, caso sejam completados.
 * [ ] O número de linhas do mapa pode ser diferente do número de colunas
 * [ ] O mapa possui minas
 * [ ] O jogo se encerra quando o jogador acerta uma mina (condição de derrota)
+* [ ] Ao perder o jogo, todas as minas são mostradas ao jogador
 
 #### Requisitos não-funcionais
 

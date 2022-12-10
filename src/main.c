@@ -2,27 +2,12 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
+#include "definitions.h"
 #include "ANSI-color-codes.h"
 
 #define WIDTH 10
 #define HEIGHT 10
 #define N_MINES 3
-
-struct position {
-    int x;
-    int y;
-};
-typedef struct position position_t;
-
-enum celltype {field = 1, mine = -1};
-
-struct cell {
-    position_t pos;
-    enum celltype value;
-    char character;
-    bool discovered;
-};
-typedef struct cell cell_t;
 
 void draw_minefield(int height, int width, cell_t *cells) {
     printf("  ");
@@ -34,7 +19,11 @@ void draw_minefield(int height, int width, cell_t *cells) {
         printf("%d ", i);
         for(int j = 0; j < width; j++) {
             if(cells[i * height + j].discovered) {
-                printf("[%c]", cells[i * height + j].character);
+                if(cells[i * height + j].value == mine) {
+                    printf(RED "[%c]" , cells[i * height + j].character);
+                } else {
+                    printf("[%c]", cells[i * height + j].character);
+                }
             } else {
                 printf(GRN "[^]" reset);
             }
@@ -44,10 +33,9 @@ void draw_minefield(int height, int width, cell_t *cells) {
     printf("\n");
 }
 
-void sample_cells(int height, int width, cell_t *cells) {
-    int mines_positions[N_MINES];
-    for(int i = 0; i < N_MINES; i++) {
-        mines_positions[i] = (int)rand() % (height * width);
+void sample_cells(int height, int width, cell_t *cells, int n_mines, int *mine_positions) {
+    for(int i = 0; i < n_mines; i++) {
+        mine_positions[i] = (int)rand() % (height * width);
     }
 
     for(int i = 0; i < height; i++) {
@@ -57,8 +45,8 @@ void sample_cells(int height, int width, cell_t *cells) {
             cells[i * height + j].discovered = false;
 
             bool is_mine = false;
-            for(int k = 0; k < N_MINES; k++) {
-                if (mines_positions[k] == (i * height + j)) {
+            for(int k = 0; k < n_mines; k++) {
+                if (mine_positions[k] == (i * height + j)) {
                     is_mine = true;
                     break;
                 }
@@ -122,52 +110,59 @@ void sample_cells(int height, int width, cell_t *cells) {
 }
 
 
-void uncover_cells(int x, int y, int height, int width, cell_t *cells) {
+void uncover_cells(int x, int y, int height, int width, cell_t *cells, int *count_uncovered) {
+    cells[y * height + x].discovered = true;
+    *count_uncovered += 1;
+
     if(cells[y * height + x].value == mine) {
         return;
     }
-    cells[y * height + x].discovered = true;
-    
     // upper left
     if(((y - 1) >= 0) && ((x - 1) >= 0) && !(cells[(y - 1) * height + (x - 1)].discovered) && (cells[(y - 1) * height + (x - 1)].character == ' ')) {
-        uncover_cells(x - 1, y - 1, height, width, cells);
+        uncover_cells(x - 1, y - 1, height, width, cells, count_uncovered);
     }
     // upper middle
     if(((y - 1) >= 0) && !(cells[(y - 1) * height + x].discovered) && (cells[(y - 1) * height + x].character == ' ')) {
-        uncover_cells(x, y - 1, height, width, cells);
+        uncover_cells(x, y - 1, height, width, cells, count_uncovered);
     }
     // upper right
     if(((y - 1) >= 0) && ((x + 1) < width) && !(cells[(y - 1) * height + (x + 1)].discovered) && (cells[(y - 1) * height + (x + 1)].character == ' ')) {
-        uncover_cells(x + 1, y - 1, height, width, cells);
+        uncover_cells(x + 1, y - 1, height, width, cells, count_uncovered);
     }
     // left
     if(((x - 1) >= 0) && !(cells[y * height + (x - 1)].discovered) && (cells[y * height + (x - 1)].character) == ' ') {
-        uncover_cells(x - 1, y, height, width, cells);
+        uncover_cells(x - 1, y, height, width, cells, count_uncovered);
     }
     // right
     if(((x + 1) < width) && !(cells[y * height + (x + 1)].discovered) && (cells[y * height + (x + 1)].character == ' ')) {
-        uncover_cells(x + 1, y, height, width, cells);
+        uncover_cells(x + 1, y, height, width, cells, count_uncovered);
     }
     // lower left
     if(((y + 1) < height) && ((x - 1) >= 0) && !(cells[(y + 1) * height + (x - 1)].discovered) && (cells[(y + 1) * height + (x - 1)].character == ' ')) {
-        uncover_cells(x - 1, y + 1, height, width, cells);
+        uncover_cells(x - 1, y + 1, height, width, cells, count_uncovered);
     }
     // lower middle
     if(((y + 1) < height) && !(cells[(y + 1) * height + x].discovered) && (cells[(y + 1) * height + x].character == ' ')) {
-        uncover_cells(x, y + 1, height, width, cells);
+        uncover_cells(x, y + 1, height, width, cells, count_uncovered);
     }
     // lower right
     if(((y + 1) < height) && ((x + 1) < width) && !(cells[(y + 1) * height + (x + 1)].discovered) && (cells[(y + 1) * height + (x + 1)].character == ' ')) {
-        uncover_cells(x + 1, y + 1, height, width, cells);
+        uncover_cells(x + 1, y + 1, height, width, cells, count_uncovered);
     }
 }
 
-bool update_minefield(int height, int width, cell_t *cells) {
+void update_minefield(
+    int height, int width, cell_t *cells,
+    int n_mines, int *mine_positions,
+    int *count_uncovered,
+    bool *victory, bool *defeat
+) {
+
     int x = -1;
     int y = -1;
-    bool passed = false;
+    bool valid_input = false;
 
-    while(!passed) {
+    while(!valid_input) {
         printf("Digite as coordenadas desejadas:\n");
         printf("x: ");
         scanf("%d", &x);
@@ -175,28 +170,46 @@ bool update_minefield(int height, int width, cell_t *cells) {
         scanf("%d", &y);
         printf("\n");
         if ((x < 0) || (x >= width) || (y < 0) || (y >= height)) {
+            draw_minefield(height, width, cells);
             printf("As coordenadas devem estar dentro do grid do jogo (0 <= x <= %d e 0 <= y <= %d)\n", width, height);
-        } else if(cells[y * HEIGHT + x].discovered == true) {
+        } else if(cells[y * height + x].discovered) {
+            draw_minefield(height, width, cells);
             printf("A coordenada inserida já foi descoberta, tente de novo.\n");
         } else {
-            passed = true;
+            valid_input = true;
         }
     }
-    uncover_cells(x, y, height, width, cells);
-
-    return cells[y * HEIGHT + x].value == mine;
+    uncover_cells(x, y, height, width, cells, count_uncovered);
+    if((height * width - *count_uncovered) == n_mines) {
+        *victory = true;
+    } else if(cells[y * height + x].value == mine) {
+        *defeat = true;
+    }
 }
 
 int main() {
     srand(time(0));
 
-    bool lost = false;
+    bool defeat = false;
+    bool victory = false;
+    int count_uncovered = 0;
     cell_t cells[HEIGHT][WIDTH];
-    sample_cells(HEIGHT, WIDTH, &cells[0][0]);
-    while(!lost) {
+    int mines_positions[N_MINES];
+    sample_cells(HEIGHT, WIDTH, &cells[0][0], N_MINES, &mines_positions[0]);
+    while(!defeat && !victory) {
         draw_minefield(HEIGHT, WIDTH, &cells[0][0]);
-        lost = update_minefield(HEIGHT, WIDTH, &cells[0][0]);
+        update_minefield(
+        HEIGHT, WIDTH, &cells[0][0],
+        N_MINES, &mines_positions[0],
+        &count_uncovered,&victory, &defeat
+        );
     }
-    printf("Você perdeu! (acertou uma mina)\n");
+    draw_minefield(HEIGHT, WIDTH, &cells[0][0]);
+    if(victory) {
+        printf("Você venceu! Parabéns!\n");
+    } else {
+        printf("Você perdeu! (acertou uma mina)\n");
+    }
     return 0;
 }
+
